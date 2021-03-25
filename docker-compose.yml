@@ -1,0 +1,60 @@
+version: "3.8"
+services: 
+  db:
+    image: mysql:5.7
+    restart: always
+    volumes:
+      - type: bind
+        source: ./yedek
+        target: /var/lib/mysql
+    networks: 
+     - wpNet
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: apismellifica
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+    secrets:
+      - db_password
+      - db_root_password
+  web:
+    image: wordpress:latest
+    depends_on:
+      - db
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: apismellifica
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_PASSWORD_FILE: /run/secrets/db_password
+    networks:
+     - wpNet
+    secrets:
+      - db_password
+  web2:
+    image: wordpress:latest
+    depends_on:
+     - db
+    restart: always
+    ports:
+      - "8090:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: apismellifica
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_PASSWORD_FILE: /run/secrets/db_password
+    networks:
+     - wpNet
+    secrets:
+      - db_password
+networks:
+  wpNet:
+    driver: bridge
+secrets:
+  db_password:
+    file: db_password.txt
+  db_root_password:
+    file: db_root_password.txt
+ 
